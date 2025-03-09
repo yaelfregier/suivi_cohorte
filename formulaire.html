@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mise à jour du parcours</title>
+</head>
+<body>
+    <h1>Bonjour {{ student.nom }},</h1>
+    <p>Votre email : {{ student.email }}</p>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li style="color: {% if category == 'danger' %}red{% else %}green{% endif %};">
+              {{ message }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <div>
+            <label for="formation">Formation suivie :</label>
+            <input type="text" id="formation" name="formation" required>
+        </div>
+        <div>
+            <label for="etablissement">Établissement d'inscription :</label>
+            <input type="text" id="etablissement" name="etablissement" required>
+        </div>
+        <div>
+            <label for="parcours">Parcours professionnel depuis la licence :</label>
+            <textarea id="parcours" name="parcours"></textarea>
+        </div>
+        <button type="submit">Envoyer</button>
+    </form>
+</body>
+</html>

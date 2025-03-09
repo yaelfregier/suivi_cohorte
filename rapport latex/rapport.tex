@@ -1,0 +1,97 @@
+
+\documentclass[a4paper,12pt]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+\title{Compte-rendu du Système de Suivi de Cohorte d'Étudiants}
+\author{Yaël Frégier}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Problématique Générale}
+
+\begin{itemize}
+    \item \textbf{Objectif :} Mettre en place un système pour suivre une cohorte d'étudiants de licence de mathématiques.
+    \item \textbf{Besoins fonctionnels :}
+    \begin{itemize}
+        \item Importer une liste d'étudiants (noms et adresses email) à partir d'un fichier Excel.
+        \item Générer pour chaque étudiant un lien personnalisé contenant un token unique.
+        \item Envoyer un email à chaque étudiant avec ce lien.
+        \item Proposer un formulaire web pré-rempli (nom et email) où l'étudiant peut renseigner son parcours post-licence (formation, établissement, parcours professionnel).
+        \item Stocker les informations en base de données.
+    \end{itemize}
+    \item \textbf{Contraintes techniques :}
+    \begin{itemize}
+        \item Utilisation de frameworks compatibles avec Python (Flask, SQLAlchemy).
+        \item Hébergement sur un serveur local.
+        \item Gestion des envois d'emails via un serveur SMTP (initialement avec Proton, puis adapté à Gmail).
+    \end{itemize}
+\end{itemize}
+
+\section{Solution Proposée}
+
+\subsection{Création de la Base de Données et des Modèles}
+\begin{itemize}
+    \item Utilisation de \textbf{Flask-SQLAlchemy} pour définir deux modèles principaux :
+    \begin{itemize}
+        \item \textbf{Student} : stocke le nom, l'email, le token et la date d'envoi.
+        \item \textbf{Reponse} : enregistre la réponse via le formulaire (formation, établissement, parcours professionnel et date de réponse).
+    \end{itemize}
+    \item Initialisation de la base de données via un script dédié (\texttt{init\_db.py}) qui appelle \texttt{db.create\_all()}.
+\end{itemize}
+
+\subsection{Importation des Données et Envoi d'Emails}
+\begin{itemize}
+    \item Un script (\texttt{send\_emails.py}) lit le fichier Excel (\texttt{liste\_etudiants.xlsx}) grâce à \textbf{pandas} et \textbf{openpyxl}.
+    \item Pour chaque étudiant, un token unique est généré (via \textbf{uuid}).
+    \item L'étudiant est enregistré dans la base de données si son email n'existe pas déjà.
+    \item Un email personnalisé est envoyé via \textbf{smtplib}, contenant un lien pointant vers un formulaire web accessible à l'URL \texttt{http://localhost:8000/form?token=\{token\}}.
+\end{itemize}
+
+\subsection{Application Web pour le Formulaire}
+\begin{itemize}
+    \item Développement d'une application web \textbf{Flask} qui héberge le formulaire accessible via le lien personnalisé.
+    \item Le formulaire affiche les informations pré-remplies (nom et email) et permet aux étudiants de compléter leur parcours.
+    \item À la soumission, les informations sont enregistrées en base (dans la table \textbf{Reponse}).
+\end{itemize}
+
+\subsection{Configuration SMTP et Envoi d'Emails via Gmail}
+\begin{itemize}
+    \item Initialement, un compte Proton était utilisé, mais la solution a été adaptée pour Gmail.
+    \item Paramètres utilisés :
+    \begin{itemize}
+        \item Serveur SMTP : \texttt{smtp.gmail.com}
+        \item Port : 587 (avec l'utilisation de \texttt{starttls()}).
+    \end{itemize}
+    \item Gestion des problèmes d'authentification via l'utilisation d'un mot de passe d'application ou l'activation de l'accès aux applications moins sécurisées.
+\end{itemize}
+
+\subsection{Déploiement et Configuration Locale}
+\begin{itemize}
+    \item Le projet est destiné à être hébergé sur un serveur local.
+    \item Utilisation d'un environnement virtuel et d'un fichier \texttt{requirements.txt} pour gérer les dépendances.
+    \item Gestion du chemin de la base de données via une URI adaptée (par exemple, \texttt{sqlite:///instance/students.db}) avec vérification de l'existence du dossier.
+\end{itemize}
+
+\section{Conclusion}
+
+La solution proposée intègre plusieurs fonctionnalités clés :
+\begin{enumerate}
+    \item L'importation de données depuis un fichier Excel.
+    \item L'envoi d'emails personnalisés contenant un lien unique vers un formulaire web.
+    \item L'hébergement d'une application Flask qui sert le formulaire permettant aux étudiants de compléter leur parcours post-licence.
+    \item La gestion des données via une base de données SQLite, initialisée et manipulée par SQLAlchemy.
+\end{enumerate}
+
+Ce système offre ainsi un suivi complet de la cohorte d'étudiants, en combinant l'automatisation de l'import et de l'envoi des emails avec une interface web interactive pour la collecte des réponses. Les principaux défis résidaient dans la configuration correcte de l'accès à la base de données et la gestion de l'authentification SMTP, qui ont été résolus par des ajustements de configuration et l'adaptation aux contraintes locales.
+
+\end{document}
+```
